@@ -1,7 +1,7 @@
 package screensaver
 
 import (
-	homeBackground "atlasHub/static/home"
+	screensaverBackground "atlasHub/static/screensaver"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -46,7 +46,7 @@ func (r *invisibleRenderer) Objects() []fyne.CanvasObject { return nil }
 func (r *invisibleRenderer) Destroy()                     {}
 
 func ScreensaverContainer(onClick func()) fyne.CanvasObject {
-	img := canvas.NewImageFromResource(homeBackground.BackgroundPng)
+	img := canvas.NewImageFromResource(screensaverBackground.ScreenSaverPng)
 	img.FillMode = canvas.ImageFillStretch
 
 	clickable := NewInvisibleClickable(onClick)
