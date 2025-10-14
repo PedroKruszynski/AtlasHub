@@ -1,4 +1,4 @@
-package usdbrl
+package udsbrl
 
 import (
 	"encoding/json"

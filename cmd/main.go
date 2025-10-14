@@ -1,7 +1,8 @@
 package main
 
 import (
-	"atlasHub/internal/usdbrl"
+	screensaver "atlasHub/internal/screens/screensaver"
+	usdbrl "atlasHub/internal/screens/usdbrl"
 	homeBackground "atlasHub/static/home"
 	"fmt"
 	"time"
@@ -21,6 +22,9 @@ func main() {
 
 	img := canvas.NewImageFromResource(homeBackground.BackgroundPng)
 
+	// --------------------------
+	// Tela Home
+	// --------------------------
 	homeLabel := widget.NewLabelWithStyle(
 		"\nAtlasHub Menu",
 		fyne.TextAlignCenter,
@@ -46,8 +50,11 @@ func main() {
 		),
 	)
 
+	// --------------------------
+	// Tela Dolar
+	// --------------------------
 	telaDolarLabel := widget.NewLabelWithStyle(
-		"Tela 1",
+		"Tela Dólar",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
@@ -57,6 +64,10 @@ func main() {
 		btnVoltar,
 		layout.NewSpacer(),
 	)
+
+	// --------------------------
+	// Tela Authenticator
+	// --------------------------
 	telaAuthenticatorLabel := widget.NewLabelWithStyle(
 		"Authenticator",
 		fyne.TextAlignCenter,
@@ -69,19 +80,34 @@ func main() {
 		layout.NewSpacer(),
 	)
 
-	descansoBtn := widget.NewButton("Clique para voltar ao menu", nil)
-	descansoContent := container.NewStack(descansoBtn)
+	// --------------------------
+	// Tela de Descanso (extraída)
+	// --------------------------
+	var stack *fyne.Container
+	var currentScreen fyne.CanvasObject
 
-	stack := container.NewStack(
+	descansoContent := screensaver.DescansoScreen(func() {
+		currentScreen = homeContent
+		stack.Objects = []fyne.CanvasObject{homeContent}
+		stack.Refresh()
+	})
+
+	// --------------------------
+	// Stack principal
+	// --------------------------
+	stack = container.NewStack(
 		homeContent,
 		telaDolarContent,
 		telaAuthenticatorContent,
 		descansoContent,
 	)
-	currentScreen := homeContent
+	currentScreen = homeContent
 	stack.Objects = []fyne.CanvasObject{currentScreen}
 
-	inactivity := 10 * time.Second
+	// --------------------------
+	// Temporizador de inatividade
+	// --------------------------
+	inactivity := 2 * time.Second
 	timer := time.NewTimer(inactivity)
 
 	resetTimer := func() {
@@ -94,6 +120,9 @@ func main() {
 		timer.Reset(inactivity)
 	}
 
+	// ===========================
+	// Botões de navegação
+	// ===========================
 	btnDolar.OnTapped = func() {
 		resetTimer()
 		cot, err := usdbrl.FetchDollar()
@@ -111,8 +140,6 @@ func main() {
 
 	btnAuthenticator.OnTapped = func() {
 		resetTimer()
-		texto := "Tela do Authenticator"
-		telaDolarLabel.SetText(texto)
 		currentScreen = telaAuthenticatorContent
 		stack.Objects = []fyne.CanvasObject{telaAuthenticatorContent}
 		stack.Refresh()
@@ -127,13 +154,9 @@ func main() {
 
 	btn3.OnTapped = func() { resetTimer() }
 
-	descansoBtn.OnTapped = func() {
-		resetTimer()
-		currentScreen = homeContent
-		stack.Objects = []fyne.CanvasObject{homeContent}
-		stack.Refresh()
-	}
-
+	// --------------------------
+	// Observa inatividade e mostra descanso
+	// --------------------------
 	go func() {
 		for {
 			<-timer.C
