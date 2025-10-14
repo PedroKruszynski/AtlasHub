@@ -46,15 +46,25 @@ func main() {
 		),
 	)
 
-	tela1Label := widget.NewLabelWithStyle(
+	telaDolarLabel := widget.NewLabelWithStyle(
 		"Tela 1",
 		fyne.TextAlignCenter,
 		fyne.TextStyle{Bold: true},
 	)
-	btnVoltar := widget.NewButton("Voltar para Home", nil)
-	tela1Content := container.NewVBox(
+	telaDolarContent := container.NewVBox(
 		layout.NewSpacer(),
-		tela1Label,
+		telaDolarLabel,
+		btnVoltar,
+		layout.NewSpacer(),
+	)
+	telaAuthenticatorLabel := widget.NewLabelWithStyle(
+		"Authenticator",
+		fyne.TextAlignCenter,
+		fyne.TextStyle{Bold: true},
+	)
+	telaAuthenticatorContent := container.NewVBox(
+		layout.NewSpacer(),
+		telaAuthenticatorLabel,
 		btnVoltar,
 		layout.NewSpacer(),
 	)
@@ -62,11 +72,16 @@ func main() {
 	descansoBtn := widget.NewButton("Clique para voltar ao menu", nil)
 	descansoContent := container.NewStack(descansoBtn)
 
-	stack := container.NewStack(homeContent, tela1Content, descansoContent)
+	stack := container.NewStack(
+		homeContent,
+		telaDolarContent,
+		telaAuthenticatorContent,
+		descansoContent,
+	)
 	currentScreen := homeContent
 	stack.Objects = []fyne.CanvasObject{currentScreen}
 
-	inactivity := 3 * time.Second
+	inactivity := 10 * time.Second
 	timer := time.NewTimer(inactivity)
 
 	resetTimer := func() {
@@ -79,7 +94,7 @@ func main() {
 		timer.Reset(inactivity)
 	}
 
-	btn1.OnTapped = func() {
+	btnDolar.OnTapped = func() {
 		resetTimer()
 		cot, err := usdbrl.FetchDollar()
 		var texto string
@@ -88,9 +103,18 @@ func main() {
 		} else {
 			texto = fmt.Sprintf("USD = R$ %.2f", cot)
 		}
-		tela1Label.SetText(texto)
-		currentScreen = tela1Content
-		stack.Objects = []fyne.CanvasObject{tela1Content}
+		telaDolarLabel.SetText(texto)
+		currentScreen = telaDolarContent
+		stack.Objects = []fyne.CanvasObject{telaDolarContent}
+		stack.Refresh()
+	}
+
+	btnAuthenticator.OnTapped = func() {
+		resetTimer()
+		texto := "Tela do Authenticator"
+		telaDolarLabel.SetText(texto)
+		currentScreen = telaAuthenticatorContent
+		stack.Objects = []fyne.CanvasObject{telaAuthenticatorContent}
 		stack.Refresh()
 	}
 
@@ -101,7 +125,6 @@ func main() {
 		stack.Refresh()
 	}
 
-	btn2.OnTapped = func() { resetTimer() }
 	btn3.OnTapped = func() { resetTimer() }
 
 	descansoBtn.OnTapped = func() {
@@ -120,6 +143,5 @@ func main() {
 	}()
 
 	myWindow.SetContent(stack)
-
 	myWindow.ShowAndRun()
 }
