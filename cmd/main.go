@@ -86,9 +86,14 @@ func main() {
 	var stack *fyne.Container
 	var currentScreen fyne.CanvasObject
 
-	descansoContent := screensaver.DescansoScreen(func() {
+	descansoContent := screensaver.ScreensaverContainer(func() {
 		currentScreen = homeContent
 		stack.Objects = []fyne.CanvasObject{homeContent}
+		stack.Refresh()
+	})
+
+	resetTimer := screensaver.StartScreensaverTimer(2*time.Second, func() {
+		stack.Objects = []fyne.CanvasObject{descansoContent}
 		stack.Refresh()
 	})
 
@@ -103,22 +108,6 @@ func main() {
 	)
 	currentScreen = homeContent
 	stack.Objects = []fyne.CanvasObject{currentScreen}
-
-	// --------------------------
-	// Temporizador de inatividade
-	// --------------------------
-	inactivity := 2 * time.Second
-	timer := time.NewTimer(inactivity)
-
-	resetTimer := func() {
-		if !timer.Stop() {
-			select {
-			case <-timer.C:
-			default:
-			}
-		}
-		timer.Reset(inactivity)
-	}
 
 	// ===========================
 	// Botões de navegação
@@ -153,17 +142,6 @@ func main() {
 	}
 
 	btn3.OnTapped = func() { resetTimer() }
-
-	// --------------------------
-	// Observa inatividade e mostra descanso
-	// --------------------------
-	go func() {
-		for {
-			<-timer.C
-			stack.Objects = []fyne.CanvasObject{descansoContent}
-			stack.Refresh()
-		}
-	}()
 
 	myWindow.SetContent(stack)
 	myWindow.ShowAndRun()
