@@ -2,6 +2,7 @@ package screensaver
 
 import (
 	screensaverBackground "atlasHub/static/screensaver"
+	"fmt"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -58,27 +59,21 @@ func ScreensaverContainer(onClick func()) fyne.CanvasObject {
 }
 
 func StartScreensaverTimer(inactivity time.Duration, onTimeout func()) func() {
-	timer := time.NewTimer(inactivity)
+	var timer *time.Timer
 
 	resetTimer := func() {
-		if !timer.Stop() {
-			select {
-			case <-timer.C:
-			default:
-			}
-		}
-		timer.Reset(inactivity)
-	}
+		fmt.Println("RESET TIMER:", time.Now()) // 👈 AQUI
 
-	go func() {
-		for {
-			<-timer.C
+		if timer != nil {
+			timer.Stop()
+		}
+
+		timer = time.AfterFunc(inactivity, func() {
 			if onTimeout != nil {
 				onTimeout()
 			}
-			resetTimer()
-		}
-	}()
+		})
+	}
 
 	return resetTimer
 }

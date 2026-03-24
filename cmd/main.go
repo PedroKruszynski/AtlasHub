@@ -85,17 +85,28 @@ func main() {
 	// --------------------------
 	var stack *fyne.Container
 	var currentScreen fyne.CanvasObject
+	var resetTimer func()
 
 	descansoContent := screensaver.ScreensaverContainer(func() {
+		if resetTimer != nil {
+			resetTimer()
+		}
+
 		currentScreen = homeContent
 		stack.Objects = []fyne.CanvasObject{homeContent}
 		stack.Refresh()
 	})
 
-	resetTimer := screensaver.StartScreensaverTimer(2*time.Second, func() {
-		stack.Objects = []fyne.CanvasObject{descansoContent}
-		stack.Refresh()
+	resetTimer = screensaver.StartScreensaverTimer(4*time.Second, func() {
+		fmt.Println("TIMEOUT DISPAROU:", time.Now())
+
+		fyne.Do(func() {
+			stack.Objects = []fyne.CanvasObject{descansoContent}
+			stack.Refresh()
+		})
 	})
+
+	resetTimer()
 
 	// --------------------------
 	// Stack principal
