@@ -62,7 +62,7 @@ func StartScreensaverTimer(inactivity time.Duration, onTimeout func()) func() {
 	var timer *time.Timer
 
 	resetTimer := func() {
-		fmt.Println("RESET TIMER:", time.Now()) // 👈 AQUI
+		fmt.Println("RESET TIMER:", time.Now())
 
 		if timer != nil {
 			timer.Stop()

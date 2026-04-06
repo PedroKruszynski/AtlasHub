@@ -1,10 +1,10 @@
 package main
 
 import (
+	"atlasHub/internal/screens/layouts"
 	screensaver "atlasHub/internal/screens/screensaver"
-	usdbrl "atlasHub/internal/screens/usdbrl"
-	homeBackground "atlasHub/static/home"
 	"fmt"
+	"image/color"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -20,7 +20,7 @@ func main() {
 	myWindow := myApp.NewWindow("AtlasHub")
 	myWindow.Resize(fyne.NewSize(1024, 600))
 
-	img := canvas.NewImageFromResource(homeBackground.BackgroundPng)
+	// img := canvas.NewImageFromResource(homeBackground.BackgroundPng)
 
 	// --------------------------
 	// Tela Home
@@ -31,38 +31,22 @@ func main() {
 		fyne.TextStyle{Bold: true},
 	)
 
-	btnDolar := widget.NewButton("Cotação Dolar", nil)
 	btnAuthenticator := widget.NewButton("Authenticator", func() {})
-	btn3 := widget.NewButton("Tap me", func() {})
+	btnTasks := widget.NewButton("Tasks", func() {})
 	btnVoltar := widget.NewButton("Voltar para Home", nil)
+	bg := canvas.NewRectangle(color.NRGBA{R: 242, G: 242, B: 242, A: 255})
 
 	homeContent := container.New(
 		layout.NewStackLayout(),
-		img,
-		container.NewVBox(
-			homeLabel,
+		bg,
+		container.NewCenter(
+			container.NewPadded(homeLabel),
 			container.New(
 				layout.NewGridLayout(2),
-				btnDolar,
 				btnAuthenticator,
-				btn3,
+				btnTasks,
 			),
 		),
-	)
-
-	// --------------------------
-	// Tela Dolar
-	// --------------------------
-	telaDolarLabel := widget.NewLabelWithStyle(
-		"Tela Dólar",
-		fyne.TextAlignCenter,
-		fyne.TextStyle{Bold: true},
-	)
-	telaDolarContent := container.NewVBox(
-		layout.NewSpacer(),
-		telaDolarLabel,
-		btnVoltar,
-		layout.NewSpacer(),
 	)
 
 	// --------------------------
@@ -78,6 +62,36 @@ func main() {
 		telaAuthenticatorLabel,
 		btnVoltar,
 		layout.NewSpacer(),
+	)
+
+	// --------------------------
+	// Tela Tasks
+	// --------------------------
+	telaTasksLabel := widget.NewLabelWithStyle(
+		"Tasks",
+		fyne.TextAlignCenter,
+		fyne.TextStyle{Bold: true},
+	)
+	bgBlack := canvas.NewRectangle(color.Black)
+
+	card := container.NewStack(
+		canvas.NewRectangle(color.White),
+		container.NewVBox(
+			layout.NewSpacer(),
+			container.NewCenter(
+				telaTasksLabel,
+				btnVoltar,
+			),
+			layout.NewSpacer(),
+		),
+	)
+
+	telaTasksContent := container.New(
+		layouts.NewMarginLayout(0.1),
+		container.NewStack(
+			bgBlack,
+			card,
+		),
 	)
 
 	// --------------------------
@@ -97,7 +111,7 @@ func main() {
 		stack.Refresh()
 	})
 
-	resetTimer = screensaver.StartScreensaverTimer(4*time.Second, func() {
+	resetTimer = screensaver.StartScreensaverTimer(8*time.Second, func() {
 		fmt.Println("TIMEOUT DISPAROU:", time.Now())
 
 		fyne.Do(func() {
@@ -113,30 +127,12 @@ func main() {
 	// --------------------------
 	stack = container.NewStack(
 		homeContent,
-		telaDolarContent,
 		telaAuthenticatorContent,
+		telaTasksContent,
 		descansoContent,
 	)
 	currentScreen = homeContent
 	stack.Objects = []fyne.CanvasObject{currentScreen}
-
-	// ===========================
-	// Botões de navegação
-	// ===========================
-	btnDolar.OnTapped = func() {
-		resetTimer()
-		cot, err := usdbrl.FetchDollar()
-		var texto string
-		if err != nil {
-			texto = "Erro ao buscar cotação"
-		} else {
-			texto = fmt.Sprintf("USD = R$ %.2f", cot)
-		}
-		telaDolarLabel.SetText(texto)
-		currentScreen = telaDolarContent
-		stack.Objects = []fyne.CanvasObject{telaDolarContent}
-		stack.Refresh()
-	}
 
 	btnAuthenticator.OnTapped = func() {
 		resetTimer()
@@ -152,7 +148,12 @@ func main() {
 		stack.Refresh()
 	}
 
-	btn3.OnTapped = func() { resetTimer() }
+	btnTasks.OnTapped = func() {
+		resetTimer()
+		currentScreen = telaTasksContent
+		stack.Objects = []fyne.CanvasObject{telaTasksContent}
+		stack.Refresh()
+	}
 
 	myWindow.SetContent(stack)
 	myWindow.ShowAndRun()
